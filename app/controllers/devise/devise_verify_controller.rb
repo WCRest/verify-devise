@@ -1,4 +1,4 @@
-class Devise::DeviseAuthyController < DeviseController
+class Devise::DeviseVerifyController < ApplicationController
   prepend_before_action :find_resource, :only => [
     :request_phone_call, :request_sms
   ]
@@ -18,6 +18,8 @@ class Devise::DeviseAuthyController < DeviseController
     :GET_enable_authy, :POST_enable_authy, :GET_verify_authy_installation,
     :POST_verify_authy_installation, :POST_disable_authy
   ]
+
+  before_action :set_client, only: [:create, :start_verification, :verify]
 
   include Devise::Controllers::Helpers
 
@@ -58,6 +60,11 @@ class Devise::DeviseAuthyController < DeviseController
   end
 
   def POST_enable_authy
+    account_sid = ENV['TWILIO_ACCOUNT_SID']
+    auth_token = ENV['TWILIO_AUTH_TOKEN']
+    byebug
+    @client = Twilio::REST::Client.new(account_sid, auth_token)
+
     @authy_user = Authy::API.register_user(
       :email => resource.email,
       :cellphone => params[:cellphone],
@@ -109,10 +116,7 @@ class Devise::DeviseAuthyController < DeviseController
   end
 
   def GET_verify_authy_installation
-    if resource_class.authy_enable_qr_code
-      response = Authy::API.request_qr_code(id: resource.authy_id)
-      @authy_qr_code = response.qr_code
-    end
+    start_verification('+19546955576', 'sms')
     render :verify_authy_installation
   end
 
@@ -178,6 +182,33 @@ class Devise::DeviseAuthyController < DeviseController
   end
 
   private
+  
+  def check_verification(phone, code)
+    verification_check = @client.verify.services(ENV['VERIFICATION_SID'])
+                                       .verification_checks
+                                       .create(:to => phone, :code => code)
+    return verification_check.status == 'approved'
+  end
+
+  def set_client
+    @client = Twilio::REST::Client.new(ENV['TWILIO_ACCOUNT_SID'], ENV['TWILIO_AUTH_TOKEN'])
+  end
+
+  def check_verification(phone, code)
+    verification_check = @client.verify.services(ENV['VERIFICATION_SID'])
+                                       .verification_checks
+                                       .create(:to => phone, :code => code)
+    return verification_check.status == 'approved'
+  end
+
+  def start_verification(to, channel='sms')
+    channel = 'sms' unless ['sms', 'voice'].include? channel
+    verification = @client.verify.services(ENV['VERIFICATION_SID'])
+                                 .verifications
+                                 .create(:to => to, :channel => channel)
+    return verification.sid
+  end
+
 
   def authenticate_scope!
     send(:"authenticate_#{resource_name}!", :force => true)
