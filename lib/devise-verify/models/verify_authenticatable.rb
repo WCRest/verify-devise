@@ -1,11 +1,11 @@
-require 'devise-authy/hooks/authy_authenticatable'
+require 'devise-verify/hooks/verify_authenticatable'
 module Devise
   module Models
-    module AuthyAuthenticatable
+    module VerifyAuthenticatable
       extend ActiveSupport::Concern
 
-      def with_authy_authentication?(request)
-        if self.authy_id.present? && self.authy_enabled
+      def with_verify_authentication?(request)
+        if self.verify_id.present? && self.verify_enabled
           return true
         end
 
@@ -13,11 +13,11 @@ module Devise
       end
 
       module ClassMethods
-        def find_by_authy_id(authy_id)
-          where(authy_id: authy_id).first
+        def find_by_verify_id(verify_id)
+          where(verify_id: verify_id).first
         end
 
-        Devise::Models.config(self, :authy_remember_device, :authy_enable_onetouch, :authy_enable_qr_code)
+        Devise::Models.config(self, :verify_remember_device, :verify_enable_onetouch, :verify_enable_qr_code)
       end
     end
   end

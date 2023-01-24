@@ -1,9 +1,9 @@
-module DeviseAuthy
+module DeviseVerify
   module Mapping
     private
     def default_controllers(options)
       options[:controllers] ||= {}
-      options[:controllers][:passwords] ||= "devise_authy/passwords"
+      options[:controllers][:passwords] ||= "devise_verify/passwords"
       super
     end
 

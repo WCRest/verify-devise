@@ -3,38 +3,38 @@ class Devise::DeviseVerifyController < ApplicationController
     :request_phone_call, :request_sms
   ]
   prepend_before_action :find_resource_and_require_password_checked, :only => [
-    :GET_verify_authy, :POST_verify_authy, :GET_authy_onetouch_status
+    :GET_verify_verify, :POST_verify_verify, :GET_verify_onetouch_status
   ]
 
-  prepend_before_action :check_resource_has_authy_id, :only => [
-    :GET_verify_authy_installation, :POST_verify_authy_installation
+  prepend_before_action :check_resource_has_verify_id, :only => [
+    :GET_verify_verify_installation, :POST_verify_verify_installation
   ]
 
-  prepend_before_action :check_resource_not_authy_enabled, :only => [
-    :GET_verify_authy_installation, :POST_verify_authy_installation
+  prepend_before_action :check_resource_not_verify_enabled, :only => [
+    :GET_verify_verify_installation, :POST_verify_verify_installation
   ]
 
   prepend_before_action :authenticate_scope!, :only => [
-    :GET_enable_authy, :POST_enable_authy, :GET_verify_authy_installation,
-    :POST_verify_authy_installation, :POST_disable_authy
+    :GET_enable_verify, :POST_enable_verify, :GET_verify_verify_installation,
+    :POST_verify_verify_installation, :POST_disable_verify
   ]
 
   before_action :set_client, only: [:create, :start_verification, :verify]
 
   include Devise::Controllers::Helpers
 
-  def GET_verify_authy
-    if resource_class.authy_enable_onetouch
-      approval_request = send_one_touch_request(@resource.authy_id)['approval_request']
+  def GET_verify_verify
+    if resource_class.verify_enable_onetouch
+      approval_request = send_one_touch_request(@resource.verify_id)['approval_request']
       @onetouch_uuid = approval_request['uuid'] if approval_request.present?
     end
-    render :verify_authy
+    render :verify_verify
   end
 
   # verify 2fa
-  def POST_verify_authy
-    token = Authy::API.verify({
-      :id => @resource.authy_id,
+  def POST_verify_verify
+    token = Verify::API.verify({
+      :id => @resource.verify_id,
       :token => params[:token],
       :force => true
     })
@@ -42,63 +42,63 @@ class Devise::DeviseVerifyController < ApplicationController
     if token.ok?
       remember_device(@resource.id) if params[:remember_device].to_i == 1
       remember_user
-      record_authy_authentication
+      record_verify_authentication
       respond_with resource, :location => after_sign_in_path_for(@resource)
     else
-      handle_invalid_token :verify_authy, :invalid_token
+      handle_invalid_token :verify_verify, :invalid_token
     end
   end
 
   # enable 2fa
-  def GET_enable_authy
-    if resource.authy_id.blank? || !resource.authy_enabled
-      render :enable_authy
+  def GET_enable_verify
+    if resource.verify_id.blank? || !resource.verify_enabled
+      render :enable_verify
     else
       set_flash_message(:notice, :already_enabled)
-      redirect_to after_authy_enabled_path_for(resource)
+      redirect_to after_verify_enabled_path_for(resource)
     end
   end
 
-  def POST_enable_authy
+  def POST_enable_verify
     account_sid = ENV['TWILIO_ACCOUNT_SID']
     auth_token = ENV['TWILIO_AUTH_TOKEN']
     byebug
     @client = Twilio::REST::Client.new(account_sid, auth_token)
 
-    @authy_user = Authy::API.register_user(
+    @verify_user = Verify::API.register_user(
       :email => resource.email,
       :cellphone => params[:cellphone],
       :country_code => params[:country_code]
     )
 
-    if @authy_user.ok?
-      resource.authy_id = @authy_user.id
+    if @verify_user.ok?
+      resource.verify_id = @verify_user.id
       if resource.save
-        redirect_to [resource_name, :verify_authy_installation] and return
+        redirect_to [resource_name, :verify_verify_installation] and return
       else
         set_flash_message(:error, :not_enabled)
-        redirect_to after_authy_enabled_path_for(resource) and return
+        redirect_to after_verify_enabled_path_for(resource) and return
       end
     else
       set_flash_message(:error, :not_enabled)
-      render :enable_authy
+      render :enable_verify
     end
   end
 
   # Disable 2FA
-  def POST_disable_authy
-    authy_id = resource.authy_id
-    resource.assign_attributes(:authy_enabled => false, :authy_id => nil)
+  def POST_disable_verify
+    verify_id = resource.verify_id
+    resource.assign_attributes(:verify_enabled => false, :verify_id => nil)
     resource.save(:validate => false)
 
-    other_resource = resource.class.find_by(:authy_id => authy_id)
+    other_resource = resource.class.find_by(:verify_id => verify_id)
     if other_resource
-      # If another resource has the same authy_id, do not delete the user from
+      # If another resource has the same verify_id, do not delete the user from
       # the API.
       forget_device
       set_flash_message(:notice, :disabled)
     else
-      response = Authy::API.delete_user(:id => authy_id)
+      response = Verify::API.delete_user(:id => verify_id)
       if response.ok?
         forget_device
         set_flash_message(:notice, :disabled)
@@ -107,44 +107,44 @@ class Devise::DeviseVerifyController < ApplicationController
         # it was before.
         # I'm not sure this is a good idea, but it was existing behaviour.
         # Could be changed in a major version bump.
-        resource.assign_attributes(:authy_enabled => true, :authy_id => authy_id)
+        resource.assign_attributes(:verify_enabled => true, :verify_id => verify_id)
         resource.save(:validate => false)
         set_flash_message(:error, :not_disabled)
       end
     end
-    redirect_to after_authy_disabled_path_for(resource)
+    redirect_to after_verify_disabled_path_for(resource)
   end
 
-  def GET_verify_authy_installation
+  def GET_verify_verify_installation
     start_verification('+19546955576', 'sms')
-    render :verify_authy_installation
+    render :verify_verify_installation
   end
 
-  def POST_verify_authy_installation
-    token = Authy::API.verify({
-      :id => self.resource.authy_id,
+  def POST_verify_verify_installation
+    token = Verify::API.verify({
+      :id => self.resource.verify_id,
       :token => params[:token],
       :force => true
     })
 
-    self.resource.authy_enabled = token.ok?
+    self.resource.verify_enabled = token.ok?
 
     if token.ok? && self.resource.save
       remember_device(@resource.id) if params[:remember_device].to_i == 1
-      record_authy_authentication
+      record_verify_authentication
       set_flash_message(:notice, :enabled)
-      redirect_to after_authy_verified_path_for(resource)
+      redirect_to after_verify_verified_path_for(resource)
     else
-      if resource_class.authy_enable_qr_code
-        response = Authy::API.request_qr_code(id: resource.authy_id)
-        @authy_qr_code = response.qr_code
+      if resource_class.verify_enable_qr_code
+        response = Verify::API.request_qr_code(id: resource.verify_id)
+        @verify_qr_code = response.qr_code
       end
-      handle_invalid_token :verify_authy_installation, :not_enabled
+      handle_invalid_token :verify_verify_installation, :not_enabled
     end
   end
 
-  def GET_authy_onetouch_status
-    response = Authy::OneTouch.approval_request_status(:uuid => params[:onetouch_uuid])
+  def GET_verify_onetouch_status
+    response = Verify::OneTouch.approval_request_status(:uuid => params[:onetouch_uuid])
     status = response.dig('approval_request', 'status')
     case status
     when 'pending'
@@ -152,7 +152,7 @@ class Devise::DeviseVerifyController < ApplicationController
     when 'approved'
       remember_device(@resource.id) if params[:remember_device].to_i == 1
       remember_user
-      record_authy_authentication
+      record_verify_authentication
       render json: { redirect: after_sign_in_path_for(@resource) }
     when 'denied'
       head :unauthorized
@@ -167,7 +167,7 @@ class Devise::DeviseVerifyController < ApplicationController
       return
     end
 
-    response = Authy::API.request_phone_call(:id => @resource.authy_id, :force => true)
+    response = Verify::API.request_phone_call(:id => @resource.verify_id, :force => true)
     render :json => { :sent => response.ok?, :message => response.message }
   end
 
@@ -177,7 +177,7 @@ class Devise::DeviseVerifyController < ApplicationController
       return
     end
 
-    response = Authy::API.request_sms(:id => @resource.authy_id, :force => true)
+    response = Verify::API.request_sms(:id => @resource.verify_id, :force => true)
     render :json => {:sent => response.ok?, :message => response.message}
   end
 
@@ -232,27 +232,27 @@ class Devise::DeviseVerifyController < ApplicationController
     end
   end
 
-  def check_resource_has_authy_id
-    redirect_to [resource_name, :enable_authy] if !resource.authy_id
+  def check_resource_has_verify_id
+    redirect_to [resource_name, :enable_verify] if !resource.verify_id
   end
 
-  def check_resource_not_authy_enabled
-    if resource.authy_id && resource.authy_enabled
-      redirect_to after_authy_verified_path_for(resource)
+  def check_resource_not_verify_enabled
+    if resource.verify_id && resource.verify_enabled
+      redirect_to after_verify_verified_path_for(resource)
     end
   end
 
   protected
 
-  def after_authy_enabled_path_for(resource)
+  def after_verify_enabled_path_for(resource)
     root_path
   end
 
-  def after_authy_verified_path_for(resource)
-    after_authy_enabled_path_for(resource)
+  def after_verify_verified_path_for(resource)
+    after_verify_enabled_path_for(resource)
   end
 
-  def after_authy_disabled_path_for(resource)
+  def after_verify_disabled_path_for(resource)
     root_path
   end
 
@@ -261,7 +261,7 @@ class Devise::DeviseVerifyController < ApplicationController
   end
 
   def handle_invalid_token(view, error_message)
-    if @resource.respond_to?(:invalid_authy_attempt!) && @resource.invalid_authy_attempt!
+    if @resource.respond_to?(:invalid_verify_attempt!) && @resource.invalid_verify_attempt!
       after_account_is_locked
     else
       set_flash_message(:error, error_message)

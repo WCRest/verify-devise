@@ -2,11 +2,11 @@ require 'rails/generators/active_record'
 
 module ActiveRecord
   module Generators
-    class DeviseAuthyGenerator < ActiveRecord::Generators::Base
+    class DeviseVerifyGenerator < ActiveRecord::Generators::Base
       source_root File.expand_path("../templates", __FILE__)
 
       def copy_devise_migration
-        migration_template "migration.rb", "db/migrate/devise_authy_add_to_#{table_name}.rb", migration_version: migration_version
+        migration_template "migration.rb", "db/migrate/devise_verify_add_to_#{table_name}.rb", migration_version: migration_version
       end
 
       private

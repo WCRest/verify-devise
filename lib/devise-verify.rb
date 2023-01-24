@@ -1,37 +1,36 @@
 require 'active_support/concern'
 require 'active_support/core_ext/integer/time'
 require 'devise'
-require 'authy'
 
 module Devise
-  mattr_accessor :authy_remember_device, :authy_enable_onetouch, :authy_enable_qr_code
-  @@authy_remember_device = 1.month
-  @@authy_enable_onetouch = false
-  @@authy_enable_qr_code = false
+  mattr_accessor :verify_remember_device, :verify_enable_onetouch, :verify_enable_qr_code
+  @@verify_remember_device = 1.month
+  @@verify_enable_onetouch = false
+  @@verify_enable_qr_code = false
 end
 
-module DeviseAuthy
-  autoload :Mapping, 'devise-authy/mapping'
+module DeviseVerify
+  autoload :Mapping, 'devise-verify/mapping'
 
   module Controllers
-    autoload :Passwords, 'devise-authy/controllers/passwords'
-    autoload :Helpers, 'devise-authy/controllers/helpers'
+    autoload :Passwords, 'devise-verify/controllers/passwords'
+    autoload :Helpers, 'devise-verify/controllers/helpers'
   end
 
   module Views
-    autoload :Helpers, 'devise-authy/controllers/view_helpers'
+    autoload :Helpers, 'devise-verify/controllers/view_helpers'
   end
 end
 
-require 'devise-authy/routes'
-require 'devise-authy/rails'
-require 'devise-authy/models/authy_authenticatable'
-require 'devise-authy/models/authy_lockable'
-require 'devise-authy/version'
+require 'devise-verify/routes'
+require 'devise-verify/rails'
+require 'devise-verify/models/verify_authenticatable'
+require 'devise-verify/models/verify_lockable'
+require 'devise-verify/version'
 
-Authy.user_agent = "DeviseAuthy/#{DeviseAuthy::VERSION} - #{Authy.user_agent}"
+#Verify.user_agent = "DeviseVerify/#{DeviseVerify::VERSION} - #{Verify.user_agent}"
 
-Devise.add_module :authy_authenticatable, :model => 'devise-authy/models/authy_authenticatable', :controller => :devise_authy, :route => :authy
-Devise.add_module :authy_lockable,        :model => 'devise-authy/models/authy_lockable'
+Devise.add_module :verify_authenticatable, :model => 'devise-verify/models/verify_authenticatable', :controller => :devise_verify, :route => :verify
+Devise.add_module :verify_lockable,        :model => 'devise-verify/models/verify_lockable'
 
-warn "DEPRECATION WARNING: The authy-devise library is no longer actively maintained. The Authy API is being replaced by the Twilio Verify API. Please see the README for more details."
+warn "DEPRECATION WARNING: The verify-devise library is no longer actively maintained. The Verify API is being replaced by the Twilio Verify API. Please see the README for more details."

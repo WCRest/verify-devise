@@ -1,4 +1,4 @@
-module DeviseAuthy
+module DeviseVerify
   module Controllers
     module Helpers
       extend ActiveSupport::Concern
@@ -14,7 +14,7 @@ module DeviseAuthy
           :value => {expires: Time.now.to_i, id: id}.to_json,
           :secure => !(Rails.env.test? || Rails.env.development?),
           :httponly => !(Rails.env.test? || Rails.env.development?),
-          :expires => resource_class.authy_remember_device.from_now
+          :expires => resource_class.verify_remember_device.from_now
         }
       end
 
@@ -32,7 +32,7 @@ module DeviseAuthy
 
         cookie = JSON.parse(cookie) rescue ""
         return cookie.blank? || (Time.now.to_i - cookie['expires'].to_i) > \
-               resource_class.authy_remember_device.to_i || cookie['id'] != id
+               resource_class.verify_remember_device.to_i || cookie['id'] != id
       end
 
       def is_devise_sessions_controller?
@@ -51,7 +51,7 @@ module DeviseAuthy
 
       def check_request_and_redirect_to_verify_token
         if signed_in?(resource_name) &&
-           warden.session(resource_name)[:with_authy_authentication] &&
+           warden.session(resource_name)[:with_verify_authentication] &&
            require_token?
           # login with 2fa
           id = warden.session(resource_name)[:id]
@@ -66,23 +66,23 @@ module DeviseAuthy
           session["#{resource_name}_remember_me"] = remember_me
           session["#{resource_name}_return_to"] = return_to if return_to
 
-          redirect_to verify_authy_path_for(resource_name)
+          redirect_to verify_verify_path_for(resource_name)
           return
         end
       end
 
-      def verify_authy_path_for(resource_or_scope = nil)
+      def verify_verify_path_for(resource_or_scope = nil)
         scope = Devise::Mapping.find_scope!(resource_or_scope)
-        send(:"#{scope}_verify_authy_path")
+        send(:"#{scope}_verify_verify_path")
       end
 
-      def send_one_touch_request(authy_id)
-        Authy::OneTouch.send_approval_request(id: authy_id, message: I18n.t('request_to_login', scope: 'devise'))
+      def send_one_touch_request(verify_id)
+        Verify::OneTouch.send_approval_request(id: verify_id, message: I18n.t('request_to_login', scope: 'devise'))
       end
 
-      def record_authy_authentication
-        @resource.update_attribute(:last_sign_in_with_authy, DateTime.now)
-        session["#{resource_name}_authy_token_checked"] = true
+      def record_verify_authentication
+        @resource.update_attribute(:last_sign_in_with_verify, DateTime.now)
+        session["#{resource_name}_verify_token_checked"] = true
         sign_in(resource_name, @resource)
         set_flash_message(:notice, :signed_in) if is_navigational_format?
       end

@@ -1,4 +1,4 @@
-class DeviseAuthy::PasswordsController < Devise::PasswordsController
+class DeviseVerify::PasswordsController < Devise::PasswordsController
   ##
   # In the passwords controller a user can update their password using a
   # recovery token. If `Devise.sign_in_after_reset_password` is `true` then the
@@ -20,7 +20,7 @@ class DeviseAuthy::PasswordsController < Devise::PasswordsController
   def sign_in(resource_or_scope, *args)
     resource = args.last || resource_or_scope
 
-    if resource.respond_to?(:with_authy_authentication?) && resource.with_authy_authentication?(request)
+    if resource.respond_to?(:with_verify_authentication?) && resource.with_verify_authentication?(request)
       # Do nothing. Because we need verify the 2FA
       true
     else

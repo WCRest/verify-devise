@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
-module DeviseAuthy
+module DeviseVerify
   VERSION = '2.3.1'
 end

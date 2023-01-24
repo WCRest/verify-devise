@@ -1,7 +1,7 @@
 # frozen_string_literal: true
-require "generators/devise_authy/devise_authy_generator"
+require "generators/devise_verify/devise_verify_generator"
 
-RSpec.describe DeviseAuthy::Generators::DeviseAuthyGenerator, type: :generator do
+RSpec.describe DeviseVerify::Generators::DeviseVerifyGenerator, type: :generator do
   destination File.expand_path("../../tmp", __FILE__)
 
   after(:all) do
@@ -25,13 +25,13 @@ RSpec.describe DeviseAuthy::Generators::DeviseAuthyGenerator, type: :generator d
     run_generator ["user"]
   end
 
-  it "adds authy_authenticatable module and authy attributes" do
+  it "adds verify_authenticatable module and verify attributes" do
     expect(destination_root).to have_structure {
       directory "app" do
         directory "models" do
           file "user.rb" do
-            contains "devise :authy_authenticatable"
-            contains "attr_accessible :authy_id, :last_sign_in_with_authy, :email"
+            contains "devise :verify_authenticatable"
+            contains "attr_accessible :verify_id, :last_sign_in_with_verify, :email"
           end
         end
       end

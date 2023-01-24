@@ -2,25 +2,25 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "devise-authy/version"
+require "devise-verify/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "devise-authy"
-  spec.version       = DeviseAuthy::VERSION
-  spec.authors       = ["Authy Inc."]
-  spec.email         = ["support@authy.com"]
+  spec.name          = "devise-verify"
+  spec.version       = DeviseVerify::VERSION
+  spec.authors       = ["Verify Inc."]
+  spec.email         = ["support@verify.com"]
 
   spec.summary       = %q{Deprecated: please see README for details}
-  spec.description   = %q{Authy plugin to add two factor authentication to Devise. This gem is deprecated, please see the README for details.}
-  spec.homepage      = "https://github.com/twilio/authy-devise"
+  spec.description   = %q{Verify plugin to add two factor authentication to Devise. This gem is deprecated, please see the README for details.}
+  spec.homepage      = "https://github.com/twilio/verify-devise"
   spec.license       = "MIT"
 
   spec.metadata      = {
-    "bug_tracker_uri"   => "https://github.com/twilio/authy-devise/issues",
-    "change_log_uri"    => "https://github.com/twilio/authy-devise/blob/master/CHANGELOG.md",
-    "documentation_uri" => "https://github.com/twilio/authy-devise",
-    "homepage_uri"      => "https://github.com/twilio/authy-devise",
-    "source_code_uri"   => "https://github.com/twilio/authy-devise"
+    "bug_tracker_uri"   => "https://github.com/twilio/verify-devise/issues",
+    "change_log_uri"    => "https://github.com/twilio/verify-devise/blob/master/CHANGELOG.md",
+    "documentation_uri" => "https://github.com/twilio/verify-devise",
+    "homepage_uri"      => "https://github.com/twilio/verify-devise",
+    "source_code_uri"   => "https://github.com/twilio/verify-devise"
   }
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "devise", ">= 4.0.0"
-  spec.add_dependency "authy", "~> 3.0"
+  spec.add_dependency "twilio-ruby", "~> 5.74"
 
   spec.add_development_dependency "appraisal", "~> 2.2"
   spec.add_development_dependency "bundler", ">= 1.16"

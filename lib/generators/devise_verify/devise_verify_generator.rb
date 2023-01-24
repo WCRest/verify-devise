@@ -1,25 +1,25 @@
 # frozen_string_literal: true
 
-module DeviseAuthy
+module DeviseVerify
   module Generators
-    class DeviseAuthyGenerator < Rails::Generators::NamedBase
-      namespace "devise_authy"
+    class DeviseVerifyGenerator < Rails::Generators::NamedBase
+      namespace "devise_verify"
 
-      desc "Add :authy_authenticatable directive in the given model, plus accessors. Also generate migration for ActiveRecord"
+      desc "Add :verify_authenticatable directive in the given model, plus accessors. Also generate migration for ActiveRecord"
 
-      def inject_devise_authy_content
+      def inject_devise_verify_content
         path = File.join(destination_root, "app", "models", "#{file_path}.rb")
         if File.exist?(path) &&
-           !File.read(path).include?("authy_authenticatable")
+           !File.read(path).include?("verify_authenticatable")
           inject_into_file(path,
-                           "authy_authenticatable, :",
+                           "verify_authenticatable, :",
                            :after => "devise :")
         end
 
         if File.exist?(path) &&
-           !File.read(path).include?(":authy_id")
+           !File.read(path).include?(":verify_id")
           inject_into_file(path,
-                           ":authy_id, :last_sign_in_with_authy, ",
+                           ":verify_id, :last_sign_in_with_verify, ",
                            :after => "attr_accessible ")
         end
       end

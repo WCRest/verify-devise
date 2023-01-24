@@ -1,7 +1,7 @@
 # frozen_string_literal: true
-require "generators/devise_authy/install_generator"
+require "generators/devise_verify/install_generator"
 
-RSpec.describe DeviseAuthy::Generators::InstallGenerator, type: :generator do
+RSpec.describe DeviseVerify::Generators::InstallGenerator, type: :generator do
   destination File.expand_path("../../tmp", __FILE__)
 
   after(:all) do
@@ -34,7 +34,7 @@ RSpec.describe DeviseAuthy::Generators::InstallGenerator, type: :generator do
       expect(destination_root).to have_structure {
         directory "config" do
           directory "locales" do
-            file "devise.authy.en.yml" do
+            file "devise.verify.en.yml" do
               contains "Two factor authentication was enabled"
             end
           end
@@ -44,19 +44,19 @@ RSpec.describe DeviseAuthy::Generators::InstallGenerator, type: :generator do
 
     it "injects devise config" do
       devise_config = File.read(File.join(destination_root, "config", "initializers", "devise.rb"))
-      expect(devise_config).to match("Devise Authy Authentication Extension")
-      expect(devise_config).to match("# config.authy_remember_device = 1.month")
-      expect(devise_config).to match("# config.authy_enable_onetouch = false")
-      expect(devise_config).to match("# config.authy_enable_qr_code = false")
+      expect(devise_config).to match("Devise Verify Authentication Extension")
+      expect(devise_config).to match("# config.verify_remember_device = 1.month")
+      expect(devise_config).to match("# config.verify_enable_onetouch = false")
+      expect(devise_config).to match("# config.verify_enable_qr_code = false")
     end
 
-    it "creates an authy initializer" do
+    it "creates an verify initializer" do
       expect(destination_root).to have_structure {
         directory "config" do
           directory "initializers" do
-            file "authy.rb" do
-              contains "Authy.api_key = ENV[\"AUTHY_API_KEY\"]\n"
-              contains "Authy.api_uri = \"https://api.authy.com/\""
+            file "verify.rb" do
+              contains "Verify.api_key = ENV[\"AUTHY_API_KEY\"]\n"
+              contains "Verify.api_uri = \"https://api.verify.com/\""
             end
           end
         end
@@ -68,10 +68,10 @@ RSpec.describe DeviseAuthy::Generators::InstallGenerator, type: :generator do
         directory "app" do
           directory "views" do
             directory "devise" do
-              directory "devise_authy" do
-                file "enable_authy.html.erb"
-                file "verify_authy_installation.html.erb"
-                file "verify_authy.html.erb"
+              directory "devise_verify" do
+                file "enable_verify.html.erb"
+                file "verify_verify_installation.html.erb"
+                file "verify_verify.html.erb"
               end
             end
           end
@@ -84,10 +84,10 @@ RSpec.describe DeviseAuthy::Generators::InstallGenerator, type: :generator do
         directory "app" do
           directory "assets" do
             directory "stylesheets" do
-              file "devise_authy.css"
+              file "devise_verify.css"
             end
             directory "javascripts" do
-              file "devise_authy.js"
+              file "devise_verify.js"
             end
           end
         end
@@ -100,8 +100,8 @@ RSpec.describe DeviseAuthy::Generators::InstallGenerator, type: :generator do
           directory "views" do
             directory "layouts" do
               file "application.html.erb" do
-                contains "<%=javascript_include_tag \"https://www.authy.com/form.authy.min.js\" %>"
-                contains "<%=stylesheet_link_tag \"https://www.authy.com/form.authy.min.css\" %>"
+                contains "<%=javascript_include_tag \"https://www.verify.com/form.verify.min.js\" %>"
+                contains "<%=stylesheet_link_tag \"https://www.verify.com/form.verify.min.css\" %>"
               end
             end
           end
@@ -123,10 +123,10 @@ RSpec.describe DeviseAuthy::Generators::InstallGenerator, type: :generator do
         directory "app" do
           directory "views" do
             directory "devise" do
-              directory "devise_authy" do
-                file "enable_authy.html.haml"
-                file "verify_authy_installation.html.haml"
-                file "verify_authy.html.haml"
+              directory "devise_verify" do
+                file "enable_verify.html.haml"
+                file "verify_verify_installation.html.haml"
+                file "verify_verify.html.haml"
               end
             end
           end
@@ -148,10 +148,10 @@ RSpec.describe DeviseAuthy::Generators::InstallGenerator, type: :generator do
         directory "app" do
           directory "assets" do
             directory "stylesheets" do
-              file "devise_authy.sass"
+              file "devise_verify.sass"
             end
             directory "javascripts" do
-              file "devise_authy.js"
+              file "devise_verify.js"
             end
           end
         end

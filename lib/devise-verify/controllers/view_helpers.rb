@@ -1,12 +1,12 @@
-module DeviseAuthy
+module DeviseVerify
   module Views
     module Helpers
-      def authy_request_phone_call_link(opts = {})
+      def verify_request_phone_call_link(opts = {})
         title = opts.delete(:title) do
           I18n.t('request_phone_call', scope: 'devise')
         end
         opts = {
-          :id => "authy-request-phone-call-link",
+          :id => "verify-request-phone-call-link",
           :method => :post,
           :remote => true
         }.merge(opts)
@@ -18,12 +18,12 @@ module DeviseAuthy
         )
       end
 
-      def authy_request_sms_link(opts = {})
+      def verify_request_sms_link(opts = {})
         title = opts.delete(:title) do
           I18n.t('request_sms', scope: 'devise')
         end
         opts = {
-          :id => "authy-request-sms-link",
+          :id => "verify-request-sms-link",
           :method => :post,
           :remote => true
         }.merge(opts)
@@ -35,24 +35,24 @@ module DeviseAuthy
         )
       end
 
-      def verify_authy_form(opts = {}, &block)
-        opts = default_opts.merge(:id => 'devise_authy').merge(opts)
-        form_tag([resource_name.to_sym, :verify_authy], opts) do
+      def verify_verify_form(opts = {}, &block)
+        opts = default_opts.merge(:id => 'devise_verify').merge(opts)
+        form_tag([resource_name.to_sym, :verify_verify], opts) do
           buffer = hidden_field_tag(:"#{resource_name}_id", @resource.id)
           buffer << capture(&block)
         end
       end
 
-      def enable_authy_form(opts = {}, &block)
+      def enable_verify_form(opts = {}, &block)
         opts = default_opts.merge(opts)
-        form_tag([resource_name.to_sym, :enable_authy], opts) do
+        form_tag([resource_name.to_sym, :enable_verify], opts) do
           capture(&block)
         end
       end
 
-      def verify_authy_installation_form(opts = {}, &block)
+      def verify_verify_installation_form(opts = {}, &block)
         opts = default_opts.merge(opts)
-        form_tag([resource_name.to_sym, :verify_authy_installation], opts) do
+        form_tag([resource_name.to_sym, :verify_verify_installation], opts) do
           capture(&block)
         end
       end
@@ -60,7 +60,7 @@ module DeviseAuthy
       private
 
       def default_opts
-        { :class => 'authy-form', :method => :post }
+        { :class => 'verify-form', :method => :post }
       end
     end
   end

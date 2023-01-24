@@ -1,10 +1,10 @@
-.devise_authy {
+.devise_verify {
   margin-left: auto;
   margin-right: auto;
   width: 350px;
 }
 
-.authy-form legend {
+.verify-form legend {
   display: block;
   width: 100%;
   padding: 0;
@@ -15,9 +15,9 @@
   border-bottom: 1px solid #E5E5E5;
 }
 
-.authy-form label,
-.authy-form input,
-.authy-form button {
+.verify-form label,
+.verify-form input,
+.verify-form button {
   font-size: 14px;
   font-weight: normal;
   line-height: 20px;

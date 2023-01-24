@@ -1,9 +1,9 @@
 en:
   devise:
     submit_token: 'Check Token'
-    submit_token_title: 'Please enter your Authy token:'
-    authy_register_title: 'Enable Two factor authentication'
-    enable_authy: 'Enable'
+    submit_token_title: 'Please enter your Verify token:'
+    verify_register_title: 'Enable Two factor authentication'
+    enable_verify: 'Enable'
     cellphone: 'Enter your cellphone'
     country: 'Enter your country'
     request_sms: 'Request SMS'
@@ -11,18 +11,18 @@ en:
     remember_device: 'Remember Device'
     request_to_login: 'Request to Login'
 
-    authy_verify_installation_title: 'Verify your account'
+    verify_verify_installation_title: 'Verify your account'
     enable_my_account: 'Enable my account'
 
-    authy_qr_code_alt: 'QR code for scanning with your authenticator app.'
-    authy_qr_code_instructions: 'Scan this QR code with your authenticator application and enter the code below.'
+    verify_qr_code_alt: 'QR code for scanning with your authenticator app.'
+    verify_qr_code_instructions: 'Scan this QR code with your authenticator application and enter the code below.'
 
-    devise_authy:
+    devise_verify:
       user:
         enabled: 'Two factor authentication was enabled'
         not_enabled: 'Something went wrong while enabling two factor authentication'
         disabled: 'Two factor authentication was disabled'
         not_disabled: 'Something went wrong while disabling two factor authentication'
-        signed_in: 'Signed in with Authy successfully.'
+        signed_in: 'Signed in with Verify successfully.'
         already_enabled: 'Two factor authentication is already enabled.'
         invalid_token: 'The entered token is invalid'

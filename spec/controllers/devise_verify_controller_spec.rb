@@ -1,44 +1,44 @@
 # frozen_string_literal: true
 
-RSpec.describe Devise::DeviseAuthyController, type: :controller do
-  let(:user) { create(:authy_user) }
+RSpec.describe Devise::DeviseVerifyController, type: :controller do
+  let(:user) { create(:verify_user) }
   before(:each) { request.env["devise.mapping"] = Devise.mappings[:user] }
 
   describe "first step of authentication not complete" do
     describe "with no user details in the session" do
-      describe "#GET_verify_authy" do
+      describe "#GET_verify_verify" do
         it "should redirect to the root_path" do
-          get :GET_verify_authy
+          get :GET_verify_verify
           expect(response).to redirect_to(root_path)
         end
 
         it "should not make a OneTouch request" do
-          expect(Authy::OneTouch).not_to receive(:send_approval_request)
-          get :GET_verify_authy
+          expect(Verify::OneTouch).not_to receive(:send_approval_request)
+          get :GET_verify_verify
         end
       end
 
-      describe "#POST_verify_authy" do
+      describe "#POST_verify_verify" do
         it "should redirect to the root_path" do
-          post :POST_verify_authy
+          post :POST_verify_verify
           expect(response).to redirect_to(root_path)
         end
 
         it "should not verify a token" do
-          expect(Authy::API).not_to receive(:verify)
-          post :POST_verify_authy
+          expect(Verify::API).not_to receive(:verify)
+          post :POST_verify_verify
         end
       end
 
-      describe "#GET_authy_onetouch_status" do
+      describe "#GET_verify_onetouch_status" do
         it "should redirect to the root_path" do
-          get :GET_authy_onetouch_status
+          get :GET_verify_onetouch_status
           expect(response).to redirect_to(root_path)
         end
 
         it "should not request the one touch status" do
-          expect(Authy::OneTouch).not_to receive(:approval_request_status)
-          get :GET_authy_onetouch_status
+          expect(Verify::OneTouch).not_to receive(:approval_request_status)
+          get :GET_verify_onetouch_status
         end
       end
     end
@@ -46,39 +46,39 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
     describe "without checking the password" do
       before(:each) { request.session["user_id"] = user.id }
 
-      describe "#GET_verify_authy" do
+      describe "#GET_verify_verify" do
         it "should redirect to the root_path" do
-          get :GET_verify_authy
+          get :GET_verify_verify
           expect(response).to redirect_to(root_path)
         end
 
         it "should not make a OneTouch request" do
-          expect(Authy::OneTouch).not_to receive(:send_approval_request)
-          get :GET_verify_authy
+          expect(Verify::OneTouch).not_to receive(:send_approval_request)
+          get :GET_verify_verify
         end
       end
 
-      describe "#POST_verify_authy" do
+      describe "#POST_verify_verify" do
         it "should redirect to the root_path" do
-          post :POST_verify_authy
+          post :POST_verify_verify
           expect(response).to redirect_to(root_path)
         end
 
         it "should not verify a token" do
-          expect(Authy::API).not_to receive(:verify)
-          post :POST_verify_authy
+          expect(Verify::API).not_to receive(:verify)
+          post :POST_verify_verify
         end
       end
 
-      describe "#GET_authy_onetouch_status" do
+      describe "#GET_verify_onetouch_status" do
         it "should redirect to the root_path" do
-          get :GET_authy_onetouch_status
+          get :GET_verify_onetouch_status
           expect(response).to redirect_to(root_path)
         end
 
         it "should not request the one touch status" do
-          expect(Authy::OneTouch).not_to receive(:approval_request_status)
-          get :GET_authy_onetouch_status
+          expect(Verify::OneTouch).not_to receive(:approval_request_status)
+          get :GET_verify_onetouch_status
         end
       end
     end
@@ -90,66 +90,66 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
       request.session["user_password_checked"] = true
     end
 
-    describe "GET #verify_authy" do
+    describe "GET #verify_verify" do
       it "Should render the second step of authentication" do
-        get :GET_verify_authy
-        expect(response).to render_template('verify_authy')
+        get :GET_verify_verify
+        expect(response).to render_template('verify_verify')
       end
 
       it "should not make a OneTouch request" do
-        expect(Authy::OneTouch).not_to receive(:send_approval_request)
-        get :GET_verify_authy
+        expect(Verify::OneTouch).not_to receive(:send_approval_request)
+        get :GET_verify_verify
       end
 
       describe "when OneTouch is enabled" do
         before(:each) do
-          Devise.authy_enable_onetouch = true
+          Devise.verify_enable_onetouch = true
         end
 
         after(:each) do
-          Devise.authy_enable_onetouch = false
+          Devise.verify_enable_onetouch = false
         end
 
         it "should make a OneTouch request and assign the uuid" do
-          expect(Authy::OneTouch).to receive(:send_approval_request)
-                                 .with(id: user.authy_id, message: 'Request to Login')
+          expect(Verify::OneTouch).to receive(:send_approval_request)
+                                 .with(id: user.verify_id, message: 'Request to Login')
                                  .and_return('approval_request' => { 'uuid' => 'uuid' }).once
-          get :GET_verify_authy
+          get :GET_verify_verify
           expect(assigns[:onetouch_uuid]).to eq('uuid')
         end
       end
     end
 
-    describe "POST #verify_authy" do
-      let(:verify_success) { double("Authy::Response", :ok? => true) }
-      let(:verify_failure) { double("Authy::Response", :ok? => false) }
-      let(:valid_authy_token) { rand(0..999999).to_s.rjust(6, '0') }
-      let(:invalid_authy_token) { rand(0..999999).to_s.rjust(6, '0') }
+    describe "POST #verify_verify" do
+      let(:verify_success) { double("Verify::Response", :ok? => true) }
+      let(:verify_failure) { double("Verify::Response", :ok? => false) }
+      let(:valid_verify_token) { rand(0..999999).to_s.rjust(6, '0') }
+      let(:invalid_verify_token) { rand(0..999999).to_s.rjust(6, '0') }
 
       describe "with a valid token" do
         before(:each) {
-          expect(Authy::API).to receive(:verify).with({
-            :id => user.authy_id,
-            :token => valid_authy_token,
+          expect(Verify::API).to receive(:verify).with({
+            :id => user.verify_id,
+            :token => valid_verify_token,
             :force => true
           }).and_return(verify_success)
         }
 
         describe "without remembering" do
           before(:each) {
-            post :POST_verify_authy, params: { :token => valid_authy_token }
+            post :POST_verify_verify, params: { :token => valid_verify_token }
           }
 
           it "should log the user in" do
             expect(subject.current_user).to eq(user)
-            expect(session["user_authy_token_checked"]).to be true
+            expect(session["user_verify_token_checked"]).to be true
           end
 
-          it "should set the last_sign_in_with_authy field on the user" do
-            expect(user.last_sign_in_with_authy).to be_nil
+          it "should set the last_sign_in_with_verify field on the user" do
+            expect(user.last_sign_in_with_verify).to be_nil
             user.reload
-            expect(user.last_sign_in_with_authy).not_to be_nil
-            expect(user.last_sign_in_with_authy).to be_within(1).of(Time.zone.now)
+            expect(user.last_sign_in_with_verify).not_to be_nil
+            expect(user.last_sign_in_with_verify).to be_within(1).of(Time.zone.now)
           end
 
           it "should redirect to the root_path and set a flash notice" do
@@ -170,8 +170,8 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
 
         describe "and remember device selected" do
           before(:each) {
-            post :POST_verify_authy, params: {
-              :token => valid_authy_token,
+            post :POST_verify_verify, params: {
+              :token => valid_verify_token,
               :remember_device => '1'
             }
           }
@@ -188,7 +188,7 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
         describe "and remember_me in the session" do
           before(:each) do
             request.session["user_remember_me"] = true
-            post :POST_verify_authy, params: { :token => valid_authy_token }
+            post :POST_verify_verify, params: { :token => valid_verify_token }
           end
 
           it "should remember the user" do
@@ -200,12 +200,12 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
 
       describe "with an invalid token" do
         before(:each) {
-          expect(Authy::API).to receive(:verify).with({
-            :id => user.authy_id,
-            :token => invalid_authy_token,
+          expect(Verify::API).to receive(:verify).with({
+            :id => user.verify_id,
+            :token => invalid_verify_token,
             :force => true
           }).and_return(verify_failure)
-          post :POST_verify_authy, params: { :token => invalid_authy_token }
+          post :POST_verify_verify, params: { :token => invalid_verify_token }
         }
 
         it "Shouldn't log the user in" do
@@ -213,7 +213,7 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
         end
 
         it "should redirect to the verification page" do
-          expect(response).to render_template('verify_authy')
+          expect(response).to render_template('verify_verify')
         end
 
         it "should set an error message in the flash" do
@@ -223,7 +223,7 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
       end
 
       describe 'with a lockable user' do
-        let(:lockable_user) { create(:lockable_authy_user) }
+        let(:lockable_user) { create(:lockable_verify_user) }
         before(:all) { Devise.lock_strategy = :failed_attempts }
 
         before(:each) do
@@ -232,13 +232,13 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
         end
 
         it 'locks the account when failed_attempts exceeds maximum' do
-          expect(Authy::API).to receive(:verify).exactly(Devise.maximum_attempts).times.with({
-            :id => lockable_user.authy_id,
-            :token => invalid_authy_token,
+          expect(Verify::API).to receive(:verify).exactly(Devise.maximum_attempts).times.with({
+            :id => lockable_user.verify_id,
+            :token => invalid_verify_token,
             :force => true
           }).and_return(verify_failure)
           (Devise.maximum_attempts).times do
-            post :POST_verify_authy, params: { token: invalid_authy_token }
+            post :POST_verify_verify, params: { token: invalid_verify_token }
           end
 
           lockable_user.reload
@@ -251,14 +251,14 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
           request.session['user_id']               = user.id
           request.session['user_password_checked'] = true
 
-          expect(Authy::API).to receive(:verify).exactly(Devise.maximum_attempts).times.with({
-            :id => user.authy_id,
-            :token => invalid_authy_token,
+          expect(Verify::API).to receive(:verify).exactly(Devise.maximum_attempts).times.with({
+            :id => user.verify_id,
+            :token => invalid_verify_token,
             :force => true
           }).and_return(verify_failure)
 
           Devise.maximum_attempts.times do
-            post :POST_verify_authy, params: { token: invalid_authy_token }
+            post :POST_verify_verify, params: { token: invalid_verify_token }
           end
 
           user.reload
@@ -267,39 +267,39 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
       end
     end
 
-    describe "GET #authy_onetouch_status" do
+    describe "GET #verify_onetouch_status" do
       let(:uuid) { SecureRandom.uuid }
 
       it "should return a 202 status code when pending" do
-        allow(Authy::OneTouch).to receive(:approval_request_status)
+        allow(Verify::OneTouch).to receive(:approval_request_status)
           .with(:uuid => uuid)
           .and_return({ 'approval_request' => { 'status' => 'pending' }})
-        get :GET_authy_onetouch_status, params: { onetouch_uuid: uuid }
+        get :GET_verify_onetouch_status, params: { onetouch_uuid: uuid }
         expect(response.code).to eq("202")
       end
 
       it "should return a 401 status code when denied" do
-        allow(Authy::OneTouch).to receive(:approval_request_status)
+        allow(Verify::OneTouch).to receive(:approval_request_status)
         .with(:uuid => uuid)
           .and_return({ 'approval_request' => { 'status' => 'denied' }})
-        get :GET_authy_onetouch_status, params: { onetouch_uuid: uuid }
+        get :GET_verify_onetouch_status, params: { onetouch_uuid: uuid }
         expect(response.code).to eq("401")
       end
 
       it "should return a 500 status code when something else happens" do
-        allow(Authy::OneTouch).to receive(:approval_request_status)
+        allow(Verify::OneTouch).to receive(:approval_request_status)
         .with(:uuid => uuid)
           .and_return({})
-        get :GET_authy_onetouch_status, params: { onetouch_uuid: uuid }
+        get :GET_verify_onetouch_status, params: { onetouch_uuid: uuid }
         expect(response.code).to eq("500")
       end
 
       describe "when approved" do
         before(:each) do
-          allow(Authy::OneTouch).to receive(:approval_request_status)
+          allow(Verify::OneTouch).to receive(:approval_request_status)
             .with(:uuid => uuid)
             .and_return({ 'approval_request' => { 'status' => 'approved' }})
-          get :GET_authy_onetouch_status, params: { onetouch_uuid: uuid, remember_device: '0' }
+          get :GET_verify_onetouch_status, params: { onetouch_uuid: uuid, remember_device: '0' }
         end
 
         it "should return a 200 status code" do
@@ -316,18 +316,18 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
 
         it "should sign the user in" do
           expect(subject.current_user).to eq(user)
-          expect(session["user_authy_token_checked"]).to be true
+          expect(session["user_verify_token_checked"]).to be true
           user.reload
-          expect(user.last_sign_in_with_authy).to be_within(1).of(Time.zone.now)
+          expect(user.last_sign_in_with_verify).to be_within(1).of(Time.zone.now)
         end
       end
 
       describe "when approved and 2fa remembered" do
         before(:each) do
-          allow(Authy::OneTouch).to receive(:approval_request_status)
+          allow(Verify::OneTouch).to receive(:approval_request_status)
             .with(:uuid => uuid)
             .and_return({ 'approval_request' => { 'status' => 'approved' }})
-          get :GET_authy_onetouch_status, params: { onetouch_uuid: uuid, remember_device: '1' }
+          get :GET_verify_onetouch_status, params: { onetouch_uuid: uuid, remember_device: '1' }
         end
 
         it "should return a 200 status code" do
@@ -348,19 +348,19 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
 
         it "should sign the user in" do
           expect(subject.current_user).to eq(user)
-          expect(session["user_authy_token_checked"]).to be true
+          expect(session["user_verify_token_checked"]).to be true
           user.reload
-          expect(user.last_sign_in_with_authy).to be_within(1).of(Time.zone.now)
+          expect(user.last_sign_in_with_verify).to be_within(1).of(Time.zone.now)
         end
       end
 
       describe "when approved and remember_me in the session" do
         before(:each) do
           request.session["user_remember_me"] = true
-          allow(Authy::API).to receive(:get_request)
+          allow(Verify::API).to receive(:get_request)
             .with("onetouch/json/approval_requests/#{uuid}")
             .and_return({ 'approval_request' => { 'status' => 'approved' }})
-          get :GET_authy_onetouch_status, params: { onetouch_uuid: uuid, remember_device: '0' }
+          get :GET_verify_onetouch_status, params: { onetouch_uuid: uuid, remember_device: '0' }
         end
 
         it "should remember the user" do
@@ -371,30 +371,30 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
     end
   end
 
-  describe "enabling/disabling authy" do
+  describe "enabling/disabling verify" do
     describe "with no-one logged in" do
-      it "GET #enable_authy should redirect to sign in" do
-        get :GET_enable_authy
+      it "GET #enable_verify should redirect to sign in" do
+        get :GET_enable_verify
         expect(response).to redirect_to(new_user_session_path)
       end
 
-      it "POST #enable_authy should redirect to sign in" do
-        post :POST_enable_authy
+      it "POST #enable_verify should redirect to sign in" do
+        post :POST_enable_verify
         expect(response).to redirect_to(new_user_session_path)
       end
 
-      it "GET #verify_authy_installation should redirect to sign in" do
-        get :GET_verify_authy_installation
+      it "GET #verify_verify_installation should redirect to sign in" do
+        get :GET_verify_verify_installation
         expect(response).to redirect_to(new_user_session_path)
       end
 
-      it "POST #verify_authy_installation should redirect to sign in" do
-        post :POST_verify_authy_installation
+      it "POST #verify_verify_installation should redirect to sign in" do
+        post :POST_verify_verify_installation
         expect(response).to redirect_to(new_user_session_path)
       end
 
-      it "POST #disable_authy should redirect to sign in" do
-        post :POST_disable_authy
+      it "POST #disable_verify should redirect to sign in" do
+        post :POST_disable_verify
         expect(response).to redirect_to(new_user_session_path)
       end
     end
@@ -402,54 +402,54 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
     describe "with a logged in user" do
       before(:each) { sign_in(user) }
 
-      describe "GET #enable_authy" do
-        it "should render enable authy view if user isn't enabled" do
-          user.update_attribute(:authy_enabled, false)
-          get :GET_enable_authy
-          expect(response).to render_template("enable_authy")
+      describe "GET #enable_verify" do
+        it "should render enable verify view if user isn't enabled" do
+          user.update_attribute(:verify_enabled, false)
+          get :GET_enable_verify
+          expect(response).to render_template("enable_verify")
         end
 
-        it "should render enable authy view if user doens't have an authy_id" do
-          user.update_attribute(:authy_id, nil)
-          get :GET_enable_authy
-          expect(response).to render_template("enable_authy")
+        it "should render enable verify view if user doens't have an verify_id" do
+          user.update_attribute(:verify_id, nil)
+          get :GET_enable_verify
+          expect(response).to render_template("enable_verify")
         end
 
-        it "should redirect and set flash if authy is enabled" do
-          user.update_attribute(:authy_enabled, true)
-          get :GET_enable_authy
+        it "should redirect and set flash if verify is enabled" do
+          user.update_attribute(:verify_enabled, true)
+          get :GET_enable_verify
           expect(response).to redirect_to(root_path)
           expect(flash[:notice]).not_to be nil
         end
       end
 
-      describe "POST #enable_authy" do
+      describe "POST #enable_verify" do
         let(:user) { create(:user) }
         let(:cellphone) { '3010008090' }
         let(:country_code) { '57' }
 
-        describe "with a successful registration to Authy" do
+        describe "with a successful registration to Verify" do
           before(:each) do
-            expect(Authy::API).to receive(:register_user).with(
+            expect(Verify::API).to receive(:register_user).with(
               :email => user.email,
               :cellphone => cellphone,
               :country_code => country_code
-            ).and_return(double("Authy::User", :ok? => true, :id => "123"))
-            post :POST_enable_authy, :params => { :cellphone => cellphone, :country_code => country_code }
+            ).and_return(double("Verify::User", :ok? => true, :id => "123"))
+            post :POST_enable_verify, :params => { :cellphone => cellphone, :country_code => country_code }
           end
 
-          it "save the authy_id to the user" do
+          it "save the verify_id to the user" do
             user.reload
-            expect(user.authy_id).to eq("123")
+            expect(user.verify_id).to eq("123")
           end
 
           it "should not enable the user yet" do
             user.reload
-            expect(user.authy_enabled).to be(false)
+            expect(user.verify_enabled).to be(false)
           end
 
           it "should redirect to the verification page" do
-            expect(response).to redirect_to(user_verify_authy_installation_path)
+            expect(response).to redirect_to(user_verify_verify_installation_path)
           end
         end
 
@@ -457,12 +457,12 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
           before(:each) do
             expect(user).to receive(:save).and_return(false)
             expect(subject).to receive(:current_user).and_return(user)
-            expect(Authy::API).to receive(:register_user).with(
+            expect(Verify::API).to receive(:register_user).with(
               :email => user.email,
               :cellphone => cellphone,
               :country_code => country_code
-            ).and_return(double("Authy::User", :ok? => true, :id => "123"))
-            post :POST_enable_authy, :params => { :cellphone => cellphone, :country_code => country_code }
+            ).and_return(double("Verify::User", :ok? => true, :id => "123"))
+            post :POST_enable_verify, :params => { :cellphone => cellphone, :country_code => country_code }
           end
 
           it "should set an error flash" do
@@ -474,119 +474,119 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
           end
         end
 
-        describe "with an unsuccessful registration to Authy" do
+        describe "with an unsuccessful registration to Verify" do
           before(:each) do
-            expect(Authy::API).to receive(:register_user).with(
+            expect(Verify::API).to receive(:register_user).with(
               :email => user.email,
               :cellphone => cellphone,
               :country_code => country_code
-            ).and_return(double("Authy::User", :ok? => false))
+            ).and_return(double("Verify::User", :ok? => false))
 
-            post :POST_enable_authy, :params => { :cellphone => cellphone, :country_code => country_code }
+            post :POST_enable_verify, :params => { :cellphone => cellphone, :country_code => country_code }
           end
 
-          it "does not update the authy_id" do
-            old_authy_id = user.authy_id
+          it "does not update the verify_id" do
+            old_verify_id = user.verify_id
             user.reload
-            expect(user.authy_id).to eq(old_authy_id)
+            expect(user.verify_id).to eq(old_verify_id)
           end
 
           it "shows an error flash" do
             expect(flash[:error]).to eq("Something went wrong while enabling two factor authentication")
           end
 
-          it "renders enable_authy page again" do
-            expect(response).to render_template('enable_authy')
+          it "renders enable_verify page again" do
+            expect(response).to render_template('enable_verify')
           end
         end
       end
 
-      describe "GET verify_authy_installation" do
-        describe "with a user that hasn't enabled authy yet" do
+      describe "GET verify_verify_installation" do
+        describe "with a user that hasn't enabled verify yet" do
           let(:user) { create(:user) }
           before(:each) { sign_in(user) }
 
-          it "should redirect to enable authy" do
-            get :GET_verify_authy_installation
-            expect(response).to redirect_to user_enable_authy_path
+          it "should redirect to enable verify" do
+            get :GET_verify_verify_installation
+            expect(response).to redirect_to user_enable_verify_path
           end
         end
 
-        describe "with a user that has enabled authy" do
-          it "should redirect to after authy verified path" do
-            get :GET_verify_authy_installation
+        describe "with a user that has enabled verify" do
+          it "should redirect to after verify verified path" do
+            get :GET_verify_verify_installation
             expect(response).to redirect_to root_path
           end
         end
 
-        describe "with a user with an authy id without authy enabled" do
-          before(:each) { user.update_attribute(:authy_enabled, false) }
+        describe "with a user with an verify id without verify enabled" do
+          before(:each) { user.update_attribute(:verify_enabled, false) }
 
-          it "should render the authy verification page" do
-            get :GET_verify_authy_installation
-            expect(response).to render_template('verify_authy_installation')
+          it "should render the verify verification page" do
+            get :GET_verify_verify_installation
+            expect(response).to render_template('verify_verify_installation')
           end
 
           describe "with qr codes turned on" do
             before(:each) do
-              Devise.authy_enable_qr_code = true
+              Devise.verify_enable_qr_code = true
             end
 
             after(:each) do
-              Devise.authy_enable_qr_code = false
+              Devise.verify_enable_qr_code = false
             end
 
             it "should hit API for a QR code" do
-              expect(Authy::API).to receive(:request_qr_code).with(
-                :id => user.authy_id
-              ).and_return(double("Authy::Request", :qr_code => 'https://example.com/qr.png'))
+              expect(Verify::API).to receive(:request_qr_code).with(
+                :id => user.verify_id
+              ).and_return(double("Verify::Request", :qr_code => 'https://example.com/qr.png'))
 
-              get :GET_verify_authy_installation
-              expect(response).to render_template('verify_authy_installation')
-              expect(assigns[:authy_qr_code]).to eq('https://example.com/qr.png')
+              get :GET_verify_verify_installation
+              expect(response).to render_template('verify_verify_installation')
+              expect(assigns[:verify_qr_code]).to eq('https://example.com/qr.png')
             end
           end
         end
       end
 
-      describe "POST verify_authy_installation" do
+      describe "POST verify_verify_installation" do
         let(:token) { "000000" }
 
-        describe "with a user without an authy id" do
+        describe "with a user without an verify id" do
           let(:user) { create(:user) }
           it "redirects to enable path" do
-            post :POST_verify_authy_installation, :params => { :token => token }
-            expect(response).to redirect_to(user_enable_authy_path)
+            post :POST_verify_verify_installation, :params => { :token => token }
+            expect(response).to redirect_to(user_enable_verify_path)
           end
         end
 
-        describe "with a user that has an authy id and is enabled" do
-          it "redirects to after authy verified path" do
-            post :POST_verify_authy_installation, :params => { :token => token }
+        describe "with a user that has an verify id and is enabled" do
+          it "redirects to after verify verified path" do
+            post :POST_verify_verify_installation, :params => { :token => token }
             expect(response).to redirect_to(root_path)
           end
         end
 
-        describe "with a user that has an authy id but isn't enabled" do
-          before(:each) { user.update_attribute(:authy_enabled, false) }
+        describe "with a user that has an verify id but isn't enabled" do
+          before(:each) { user.update_attribute(:verify_enabled, false) }
 
           describe "successful verification" do
             before(:each) do
-              expect(Authy::API).to receive(:verify).with({
-                :id => user.authy_id,
+              expect(Verify::API).to receive(:verify).with({
+                :id => user.verify_id,
                 :token => token,
                 :force => true
-              }).and_return(double("Authy::Response", :ok? => true))
-              post :POST_verify_authy_installation, :params => { :token => token, :remember_device => '0' }
+              }).and_return(double("Verify::Response", :ok? => true))
+              post :POST_verify_verify_installation, :params => { :token => token, :remember_device => '0' }
             end
 
-            it "should enable authy for user" do
+            it "should enable verify for user" do
               user.reload
-              expect(user.authy_enabled).to be true
+              expect(user.verify_enabled).to be true
             end
 
-            it "should set {resource}_authy_token_checked in the session" do
-              expect(session["user_authy_token_checked"]).to be true
+            it "should set {resource}_verify_token_checked in the session" do
+              expect(session["user_verify_token_checked"]).to be true
             end
 
             it "should set a flash notice and redirect" do
@@ -601,20 +601,20 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
 
           describe "successful verification with remember device" do
             before(:each) do
-              expect(Authy::API).to receive(:verify).with({
-                :id => user.authy_id,
+              expect(Verify::API).to receive(:verify).with({
+                :id => user.verify_id,
                 :token => token,
                 :force => true
-              }).and_return(double("Authy::Response", :ok? => true))
-              post :POST_verify_authy_installation, :params => { :token => token, :remember_device => '1' }
+              }).and_return(double("Verify::Response", :ok? => true))
+              post :POST_verify_verify_installation, :params => { :token => token, :remember_device => '1' }
             end
 
-            it "should enable authy for user" do
+            it "should enable verify for user" do
               user.reload
-              expect(user.authy_enabled).to be true
+              expect(user.verify_enabled).to be true
             end
-            it "should set {resource}_authy_token_checked in the session" do
-              expect(session["user_authy_token_checked"]).to be true
+            it "should set {resource}_verify_token_checked in the session" do
+              expect(session["user_verify_token_checked"]).to be true
             end
             it "should set a flash notice and redirect" do
               expect(response).to redirect_to(root_path)
@@ -632,71 +632,71 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
 
           describe "unsuccessful verification" do
             before(:each) do
-              expect(Authy::API).to receive(:verify).with({
-                :id => user.authy_id,
+              expect(Verify::API).to receive(:verify).with({
+                :id => user.verify_id,
                 :token => token,
                 :force => true
-              }).and_return(double("Authy::Response", :ok? => false))
-              post :POST_verify_authy_installation, :params => { :token => token }
+              }).and_return(double("Verify::Response", :ok? => false))
+              post :POST_verify_verify_installation, :params => { :token => token }
             end
 
-            it "should not enable authy for user" do
+            it "should not enable verify for user" do
               user.reload
-              expect(user.authy_enabled).to be false
+              expect(user.verify_enabled).to be false
             end
 
-            it "should set an error flash and render verify_authy_installation" do
-              expect(response).to render_template('verify_authy_installation')
+            it "should set an error flash and render verify_verify_installation" do
+              expect(response).to render_template('verify_verify_installation')
               expect(flash[:error]).to eq('Something went wrong while enabling two factor authentication')
             end
           end
 
           describe "unsuccessful verification with qr codes turned on" do
             before(:each) do
-              Devise.authy_enable_qr_code = true
+              Devise.verify_enable_qr_code = true
             end
 
             after(:each) do
-              Devise.authy_enable_qr_code = false
+              Devise.verify_enable_qr_code = false
             end
 
             it "should hit API for a QR code" do
-              expect(Authy::API).to receive(:verify).with({
-                :id => user.authy_id,
+              expect(Verify::API).to receive(:verify).with({
+                :id => user.verify_id,
                 :token => token,
                 :force => true
-              }).and_return(double("Authy::Response", :ok? => false))
-              expect(Authy::API).to receive(:request_qr_code).with(
-                :id => user.authy_id
-              ).and_return(double("Authy::Request", :qr_code => 'https://example.com/qr.png'))
+              }).and_return(double("Verify::Response", :ok? => false))
+              expect(Verify::API).to receive(:request_qr_code).with(
+                :id => user.verify_id
+              ).and_return(double("Verify::Request", :qr_code => 'https://example.com/qr.png'))
 
-              post :POST_verify_authy_installation, :params => { :token => token }
-              expect(response).to render_template('verify_authy_installation')
-              expect(assigns[:authy_qr_code]).to eq('https://example.com/qr.png')
+              post :POST_verify_verify_installation, :params => { :token => token }
+              expect(response).to render_template('verify_verify_installation')
+              expect(assigns[:verify_qr_code]).to eq('https://example.com/qr.png')
             end
           end
         end
       end
 
-      describe "POST disable_authy" do
+      describe "POST disable_verify" do
         describe "successfully" do
           before(:each) do
             cookies.signed[:remember_device] = {
               :value => {expires: Time.now.to_i, id: user.id}.to_json,
               :secure => false,
-              :expires => User.authy_remember_device.from_now
+              :expires => User.verify_remember_device.from_now
             }
-            expect(Authy::API).to receive(:delete_user)
-              .with(:id => user.authy_id)
-              .and_return(double("Authy::Response", :ok? => true))
+            expect(Verify::API).to receive(:delete_user)
+              .with(:id => user.verify_id)
+              .and_return(double("Verify::Response", :ok? => true))
 
-            post :POST_disable_authy
+            post :POST_disable_verify
           end
 
           it "should disable 2FA" do
             user.reload
-            expect(user.authy_id).to be nil
-            expect(user.authy_enabled).to be false
+            expect(user.verify_id).to be nil
+            expect(user.verify_enabled).to be false
           end
 
           it "should forget the device cookie" do
@@ -709,25 +709,25 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
           end
         end
 
-        describe "with more than one user using the same authy_id" do
-          # It is valid for more than one user to share an authy_id
-          # https://github.com/twilio/authy-devise/issues/143
+        describe "with more than one user using the same verify_id" do
+          # It is valid for more than one user to share an verify_id
+          # https://github.com/twilio/verify-devise/issues/143
           before(:each) do
-            @other_user = create(:authy_user, :authy_id => user.authy_id)
+            @other_user = create(:verify_user, :verify_id => user.verify_id)
             cookies.signed[:remember_device] = {
               :value => {expires: Time.now.to_i, id: user.id}.to_json,
               :secure => false,
-              :expires => User.authy_remember_device.from_now
+              :expires => User.verify_remember_device.from_now
             }
-            expect(Authy::API).not_to receive(:delete_user)
+            expect(Verify::API).not_to receive(:delete_user)
 
-            post :POST_disable_authy
+            post :POST_disable_verify
           end
 
           it "should disable 2FA" do
             user.reload
-            expect(user.authy_id).to be nil
-            expect(user.authy_enabled).to be false
+            expect(user.verify_id).to be nil
+            expect(user.verify_enabled).to be false
           end
 
           it "should forget the device cookie" do
@@ -745,19 +745,19 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
             cookies.signed[:remember_device] = {
               :value => {expires: Time.now.to_i, id: user.id}.to_json,
               :secure => false,
-              :expires => User.authy_remember_device.from_now
+              :expires => User.verify_remember_device.from_now
             }
-            expect(Authy::API).to receive(:delete_user)
-              .with(:id => user.authy_id)
-              .and_return(double("Authy::Response", :ok? => false))
+            expect(Verify::API).to receive(:delete_user)
+              .with(:id => user.verify_id)
+              .and_return(double("Verify::Response", :ok? => false))
 
-            post :POST_disable_authy
+            post :POST_disable_verify
           end
 
           it "should not disable 2FA" do
             user.reload
-            expect(user.authy_id).not_to be nil
-            expect(user.authy_enabled).to be true
+            expect(user.verify_id).not_to be nil
+            expect(user.verify_enabled).to be true
           end
 
           it "should not forget the device cookie" do
@@ -776,7 +776,7 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
   describe "requesting authentication tokens" do
     describe "without a user" do
       it "Should not request sms if user couldn't be found" do
-        expect(Authy::API).not_to receive(:request_sms)
+        expect(Verify::API).not_to receive(:request_sms)
 
         post :request_sms
 
@@ -787,7 +787,7 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
       end
 
       it "Should not request a phone call if user couldn't be found" do
-        expect(Authy::API).not_to receive(:request_phone_call)
+        expect(Verify::API).not_to receive(:request_phone_call)
 
         post :request_phone_call
 
@@ -800,10 +800,10 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
 
     describe "#request_sms" do
       before(:each) do
-        expect(Authy::API).to receive(:request_sms)
-          .with(:id => user.authy_id, :force => true)
+        expect(Verify::API).to receive(:request_sms)
+          .with(:id => user.verify_id, :force => true)
           .and_return(
-            double("Authy::Response", :ok? => true, :message => "Token was sent.")
+            double("Verify::Response", :ok? => true, :message => "Token was sent.")
           )
       end
       describe "with a logged in user" do
@@ -835,10 +835,10 @@ RSpec.describe Devise::DeviseAuthyController, type: :controller do
 
     describe "#request_phone_call" do
       before(:each) do
-        expect(Authy::API).to receive(:request_phone_call)
-          .with(:id => user.authy_id, :force => true)
+        expect(Verify::API).to receive(:request_phone_call)
+          .with(:id => user.verify_id, :force => true)
           .and_return(
-            double("Authy::Response", :ok? => true, :message => "Token was sent.")
+            double("Verify::Response", :ok? => true, :message => "Token was sent.")
           )
       end
       describe "with a logged in user" do

@@ -5,7 +5,7 @@ FactoryBot.define do
     "person#{n}@example.com"
   end
 
-  sequence :authy_id do |n|
+  sequence :verify_id do |n|
     n.to_s
   end
 
@@ -13,9 +13,9 @@ FactoryBot.define do
     email { generate(:email) }
     password { "correct horse battery staple" }
 
-    factory :authy_user do
-      authy_id { generate(:authy_id) }
-      authy_enabled { true }
+    factory :verify_user do
+      verify_id { generate(:verify_id) }
+      verify_enabled { true }
     end
   end
 
@@ -24,10 +24,10 @@ FactoryBot.define do
     password { "correct horse battery staple" }
   end
 
-  factory :lockable_authy_user, class: LockableUser do
+  factory :lockable_verify_user, class: LockableUser do
     email { generate(:email) }
     password { "correct horse battery staple" }
-    authy_id { generate(:authy_id) }
-    authy_enabled { true }
+    verify_id { generate(:verify_id) }
+    verify_enabled { true }
   end
 end

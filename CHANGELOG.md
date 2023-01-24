@@ -24,13 +24,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-- If the app offers a QR code scan and user fails to verify authy installation, the QR code wasn't shown again. Fixed in (#149)
+- If the app offers a QR code scan and user fails to verify verify installation, the QR code wasn't shown again. Fixed in (#149)
 
 ## [2.2.0] - 2020-06-04
 
 ### Fixed
 
-- Don't delete user in Authy if another user has the same authy_id (#144)
+- Don't delete user in Verify if another user has the same verify_id (#144)
 
 ## [2.1.0] - 2020-05-05
 
@@ -73,8 +73,8 @@ Releasing this as version 2 because there is a significant change in dependencie
 
 ### Fixed
 
-- Corrects for label in verify_authy view (#103 thanks @mstruebing)
-- Corrects heading in verify_authy view (#104 thanks @mstruebing)
+- Corrects for label in verify_verify view (#103 thanks @mstruebing)
+- Corrects heading in verify_verify view (#104 thanks @mstruebing)
 
 ### Changed
 
@@ -82,7 +82,7 @@ Releasing this as version 2 because there is a significant change in dependencie
 
 ### Added
 
-- Now sets a distinct user agent through the Authy gem (#110)
+- Now sets a distinct user agent through the Verify gem (#110)
 
 ## [1.10.0] - 2018-09-26
 
@@ -110,8 +110,8 @@ Releasing this as version 2 because there is a significant change in dependencie
 ### Fixed
 
 - Fixes Ruby interpolation in HAML for onetouch (thanks @muan)
-- Records Authy authentication after install verification (thanks @nukturnal)
-- Forgets remember device cookie when disabling Authy (thanks @senekis)
+- Records Verify authentication after install verification (thanks @nukturnal)
+- Forgets remember device cookie when disabling Verify (thanks @senekis)
 
 ### Changed
 
